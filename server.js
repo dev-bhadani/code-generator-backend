@@ -7,7 +7,7 @@ const exportRoutes = require('./src/routes/exportRoutes');
 
 dotenv.config();
 
-connectDB();
+// connectDB();
 
 const app = express();
 

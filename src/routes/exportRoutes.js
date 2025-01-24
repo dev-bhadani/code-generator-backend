@@ -1,8 +1,8 @@
 const express = require('express');
-const { exportComponent } = require('../controllers/exportController');
+const { exportProject } = require('../controllers/exportController');
 
 const router = express.Router();
 
-router.post('/', exportComponent);
+router.post('/', exportProject);
 
 module.exports = router;
