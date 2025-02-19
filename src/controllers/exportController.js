@@ -8,33 +8,45 @@ const exportProject = (req, res) => {
     if (!name || !Array.isArray(fields)) {
         return res.status(400).json({success: false, message: 'Invalid data received'});
     }
+
     const componentName = name.replace(/\s+/g, '');
+
     const fieldComponents = fields.map((field) => {
         switch (field.type) {
             case 'text':
                 return `<TextField label="${field.label}" variant="outlined" fullWidth margin="normal" />`;
+
             case 'email':
                 return `<TextField label="${field.label}" type="email" variant="outlined" fullWidth margin="normal" />`;
+
             case 'password':
                 return `<TextField label="${field.label}" type="password" variant="outlined" fullWidth margin="normal" />`;
+
             case 'button':
                 return `<Button variant="contained" color="primary">${field.label}</Button>`;
+
             case 'checkbox':
-                return `<FormControlLabel control={<Checkbox name="${field.label.toLowerCase()}" />} label="${field.label}" />`;
+                return `<FormControl component="fieldset">
+                            <FormLabel component="legend">${field.label}</FormLabel>
+                            ${field.options.map(option => `<FormControlLabel control={<Checkbox />} label="${option}" />`).join('\n')}
+                        </FormControl>`;
+
             case 'radio':
                 return `<FormControl component="fieldset">
-                                <FormLabel component="legend">${field.label}</FormLabel>
-                                <RadioGroup name="${field.label.toLowerCase()}">
-                                    ${field.options.map(option => `<FormControlLabel value="${option}" control={<Radio />} label="${option}" />`).join('\n')}
-                                </RadioGroup>
-                            </FormControl>`;
+                            <FormLabel component="legend">${field.label}</FormLabel>
+                            <RadioGroup name="${field.label.toLowerCase()}">
+                                ${field.options.map(option => `<FormControlLabel value="${option}" control={<Radio />} label="${option}" />`).join('\n')}
+                            </RadioGroup>
+                        </FormControl>`;
+
             case 'select':
                 return `<FormControl variant="outlined" fullWidth margin="normal">
-                                <InputLabel>${field.label}</InputLabel>
-                                <Select label="${field.label}">
-                                    ${field.options.map(option => `<MenuItem value="${option}">${option}</MenuItem>`).join('\n')}
-                                </Select>
-                            </FormControl>`;
+                            <InputLabel>${field.label}</InputLabel>
+                            <Select label="${field.label}">
+                                ${field.options.map(option => `<MenuItem value="${option}">${option}</MenuItem>`).join('\n')}
+                            </Select>
+                        </FormControl>`;
+
             default:
                 return `<div>Unknown field type: ${field.type}</div>`;
         }
@@ -63,6 +75,8 @@ const exportProject = (req, res) => {
     if (!fs.existsSync(srcDir)) fs.mkdirSync(srcDir, {recursive: true});
     if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, {recursive: true});
 
+    fs.writeFileSync(path.join(srcDir, 'App.js'), formCode);
+
     const packageJson = {
         name: componentName.toLowerCase(), version: "1.0.0", private: true, dependencies: {
             "@mui/material": "^5.0.0",
@@ -80,7 +94,6 @@ const exportProject = (req, res) => {
     };
 
     fs.writeFileSync(path.join(projectDir, 'package.json'), JSON.stringify(packageJson, null, 2));
-    fs.writeFileSync(path.join(srcDir, 'App.js'), formCode);
 
     const indexJs = `import React from 'react';
     import ReactDOM from 'react-dom';
